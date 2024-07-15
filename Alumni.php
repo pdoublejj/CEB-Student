@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Sheets Data Display</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f4f9;
+        }
+        .button-container {
+            margin-bottom: 20px;
+        }
+        /* .year-button {
+            padding: 10px 20px;
+            margin: 5px;
+            cursor: pointer;
+            background: #eee;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            transition: background 0.3s ease;
+        }
+        .year-button:hover {
+            background: #ddd;
+        } */
+        .year-button {
+                padding: 15px 30px;
+                margin: 5px;
+                cursor: pointer;
+                background: linear-gradient(to right, rgb(52, 232, 158), rgb(15, 52, 67));
+                border: none;
+                border-radius: 50px;
+                color: white;
+                font-weight: bold;
+                font-size: 1.5em; /* เพิ่มขนาดตัวอักษร */
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+                transition: background 0.3s ease, transform 0.2s ease;
+        }
+        .year-button:hover {
+                background: linear-gradient(to right, rgb(15, 52, 67), rgb(52, 232, 158));
+                transform: scale(1.05);
+        }
+
+        .Page-Staffs {
+            display: flex;
+            align-items: center;
+            background: #fff;
+            margin-bottom: 20px;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .Page-Staffs:nth-child(odd) {
+            background-color: #e6f7e6;
+        }
+        .Page-Staffs:nth-child(even) {
+            background-color: #e6f7e6;
+        }
+        .Image-CurveII {
+            flex-shrink: 0;
+            margin-right: 20px;
+            margin-bottom: auto;
+        }
+        .Image-CurveII img {
+            max-width: 150px;
+            border-radius: 50%;
+        }
+        .Page-Staffs-Details {
+            flex-grow: 1;
+        }
+        .Page-Staffs-Name {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #008000;
+        }
+        .Page-Staffs-Desc {
+            margin: 5px 0;
+        }
+        .Page-Staffs-Desc:nth-child(even) {
+            background-color: #e6f7e6;
+        }
+        .Page-Staffs-Title {
+            font-weight: bold;
+        }
+        .table-section {
+            display: table;
+            width: 100%;
+        }
+        .table-section span {
+            display: table-cell;
+            vertical-align: top;
+        }
+        .table-section .title {
+            width: 150px;
+        }
+        .ClearBoth-I {
+            clear: both;
+        }
+        @media (max-width: 768px) {
+            .Page-Staffs {
+                flex-direction: column;
+                align-items: center;
+            }
+            .Image-CurveII {
+                margin-right: 0;
+                margin-bottom: 20px;
+            }
+            .Page-Staffs-Details {
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="button-container" id="yearButtons">
+        <!-- Buttons will be inserted here -->
+    </div>
+    <div id="staffContainer"></div>
+
+    <script>
+        const apiKey = 'AIzaSyBl85NIvtUbSf4Veaoae8axd-ZQfpR6Pok';
+        const spreadsheetId = '14vHGyaQAMFP5tWUOn27TonPy8kEt881EcLk_xhsY1h4';
+        const range = 'Sheet1!A2:AI';
+
+        function fetchData() {
+            fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${range}?key=${apiKey}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (!data.values) {
+                        console.error('No data found.');
+                        return;
+                    }
+
+                    const rows = data.values;
+                    const years = Array.from(new Set(rows.map(row => row[2]))).sort(); // Get unique years and sort them
+                    const buttonsContainer = document.getElementById('yearButtons');
+                    const container = document.getElementById('staffContainer');
+                    buttonsContainer.innerHTML = '';
+                    container.innerHTML = '';
+
+                    years.forEach(year => {
+                        const button = document.createElement('button');
+                        button.className = 'year-button';
+                        button.textContent = 'Academic year ' +year;
+                        button.addEventListener('click', () => displayYearData(year, rows));
+                        buttonsContainer.appendChild(button);
+                    });
+
+                    // Display data for the first year by default
+                    if (years.length > 0) {
+                        displayYearData(years[0], rows);
+                    }
+                })
+                .catch(error => console.error('Error fetching data:', error));
+        }
+
+        function displayYearData(year, rows) {
+            const container = document.getElementById('staffContainer');
+            container.innerHTML = '';
+
+            const yearRows = rows.filter(row => row[2] === year);
+            yearRows.forEach(row => {
+                const [
+                    imageUrl, name, year, program, email, position, specialty, workPlace, thesis,
+                    majorAdvisor, coAdvisor1, coAdvisor2, coAdvisor3, coAdvisor4, interests,
+                    publication1, linkPub1, publication2, linkPub2, publication3, linkPub3,
+                    publication4, linkPub4, publication5, linkPub5, publication6, linkPub6
+                ] = row;
+
+                const staffDiv = document.createElement('div');
+                staffDiv.className = 'Page-Staffs';
+                staffDiv.innerHTML = `
+                    <div class="Image-CurveII">
+                        <img alt="alt" src="${imageUrl}" title="title" />
+                    </div>
+                    <div class="Page-Staffs-Details">
+                        <div class="Page-Staffs-Name">${name}</div>
+                        <hr>
+                        <div class="Page-Staffs-Desc"><span class="Page-Staffs-Title"><u>Academic year</u> : </span>${year}</div>
+                        <div class="Page-Staffs-Desc"><span class="Page-Staffs-Title"><u>Program</u> : </span>${program}</div>
+                        <div class="Page-Staffs-Desc"><span class="Page-Staffs-Title"><u>Email</u> : </span>${email}</div>
+                        <div class="Page-Staffs-Desc"><span class="Page-Staffs-Title"><u>Position</u> : </span>${position}</div>
+                        <div class="Page-Staffs-Desc"><span class="Page-Staffs-Title"><u>Specialty</u> : </span>${specialty}</div>
+                        <div class="Page-Staffs-Desc"><span class="Page-Staffs-Title"><u>Place of work</u> : </span>${workPlace}</div>
+                        <div class="Page-Staffs-Desc"><span class="Page-Staffs-Title"><u>Thesis</u> : </span>${thesis}</div>
+                        <div class="Page-Staffs-Desc"><span class="Page-Staffs-Title"><u>Major Advisor</u> : </span>${majorAdvisor}</div>
+                        <div class="Page-Staffs-Desc">
+                            <div class="table-section">
+                                <span class="title"><span class="Page-Staffs-Title"><u>Co-Advisor</u> :</span></span>
+                                <span>
+                                    ${coAdvisor1 ? `${coAdvisor1}` : ''}
+                                    ${coAdvisor2 ? `<br>${coAdvisor2}` : ''}
+                                    ${coAdvisor3 ? `<br>${coAdvisor3}` : ''}
+                                    ${coAdvisor4 ? `<br>${coAdvisor4}` : ''}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="Page-Staffs-Desc">
+                            <div class="table-section">
+                                <span class="title"><span class="Page-Staffs-Title"><u>Publication/<br>Conference</u> :</span></span>
+                                <span>
+                                    ${publication1 ? `<a href="${linkPub1}" target="_blank">${publication1}</a>` : ''}
+                                    ${publication2 ? `<br><br><a href="${linkPub2}" target="_blank">${publication2}</a>` : ''}
+                                    ${publication3 ? `<br><br><a href="${linkPub3}" target="_blank">${publication3}</a>` : ''}
+                                    ${publication4 ? `<br><br><a href="${linkPub4}" target="_blank">${publication4}</a>` : ''}
+                                    ${publication5 ? `<br><br><a href="${linkPub5}" target="_blank">${publication5}</a>` : ''}
+                                    ${publication6 ? `<br><br><a href="${linkPub6}" target="_blank">${publication6}</a>` : ''}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="Page-Staffs-Desc"><span class="Page-Staffs-Title"><u>Areas of interest</u> : </span>${interests}</div>
+                    </div>
+                    <div class="ClearBoth-I">&nbsp;</div>
+                `;
+                
+                // สลับสีของแต่ละแถวใน .Page-Staffs-Desc
+                const descElements = staffDiv.querySelectorAll('.Page-Staffs-Desc');
+                descElements.forEach((descElement, index) => {
+                    if (index % 2 === 1) {
+                        descElement.style.backgroundColor = '#fff';
+                    }
+                });
+
+                container.appendChild(staffDiv);
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', fetchData);
+    </script>
+</body>
+</html>
